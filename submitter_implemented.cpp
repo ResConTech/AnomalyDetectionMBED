@@ -115,7 +115,7 @@ void th_load_tensor(void)
 void th_infer(void)
 {
 
-    // Your existing inference code...
+    
     float total_mse = 0.0f;
     float predicted_features[NUM_PCA_FEATURES];
 
