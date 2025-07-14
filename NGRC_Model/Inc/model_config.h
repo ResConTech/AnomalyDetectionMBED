@@ -25,16 +25,25 @@
 // Valid timesteps for prediction (considering max delay)
 #define NUM_VALID_TIMESTEPS_FOR_PREDICTION 121  // 128 - 6
 
-// Data payload size - NOW ONLY ORIGINAL FEATURES
+// Windowed inference configuration
+#define WINDOW_SIZE 30                    // Timesteps per window
+#define WINDOW_OVERLAP 6                  // Overlap for temporal dependencies  
+#define PREDICTIONS_PER_WINDOW (WINDOW_SIZE - MAX_ABS_DELAY)  // 24 predictions per window
+
+// Windowed data payload size
+#define WINDOWED_SAMPLE_FLOAT_COUNT (WINDOW_SIZE * NUM_PCA_FEATURES)  // 600 floats
+#define WINDOWED_PAYLOAD_SIZE_BYTES (WINDOWED_SAMPLE_FLOAT_COUNT * sizeof(float))  // 2,400 bytes
+
+// Legacy full sample configuration (kept for reference)
 #define ORIGINAL_SAMPLE_FLOAT_COUNT (NUM_FRAMES * NUM_PCA_FEATURES)  // 2,560 floats
-#define PAYLOAD_SIZE_FLOATS ORIGINAL_SAMPLE_FLOAT_COUNT              // No pre-expanded vectors
-#define NGRC_PAYLOAD_SIZE_BYTES (PAYLOAD_SIZE_FLOATS * sizeof(float))  // 10,240 bytes
+#define PAYLOAD_SIZE_FLOATS WINDOWED_SAMPLE_FLOAT_COUNT              // Use windowed size
+#define NGRC_PAYLOAD_SIZE_BYTES WINDOWED_PAYLOAD_SIZE_BYTES          // Use windowed size
 
 // Buffer size for a single expanded vector (used during inference)
 #define EXPANDED_VECTOR_SIZE NGRC_EFFECTIVE_TERMS  // 861 floats
 
 // For MLPerf Tiny API
-#define MAX_DB_INPUT_SIZE NGRC_PAYLOAD_SIZE_BYTES
+#define MAX_DB_INPUT_SIZE WINDOWED_PAYLOAD_SIZE_BYTES
 
 // Model version string for MLPerf
 #define TH_MODEL_VERSION EE_MODEL_VERSION_AD01

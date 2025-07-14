@@ -27,7 +27,7 @@ FileHandle *mbed::mbed_override_console(int fd)
 }
 
 // NGRC data management
-static float data_payload_buffer[ORIGINAL_SAMPLE_FLOAT_COUNT]; // Only original features now
+static float data_payload_buffer[WINDOWED_SAMPLE_FLOAT_COUNT]; // Windowed features only
 static const float *original_features_ptr = nullptr;
 static const float *expanded_vectors_ptr = nullptr; // Deprecated - expansion done on-the-fly
 static float current_anomaly_score = 0.0f;
@@ -97,7 +97,7 @@ void th_final_initialize(void)
 void th_load_tensor(void)
 {
 
-    size_t expected_bytes = ORIGINAL_SAMPLE_FLOAT_COUNT * sizeof(float);
+    size_t expected_bytes = WINDOWED_SAMPLE_FLOAT_COUNT * sizeof(float);
     size_t bytes = ee_get_buffer(reinterpret_cast<uint8_t *>(data_payload_buffer),
                                  expected_bytes);
 
@@ -105,7 +105,7 @@ void th_load_tensor(void)
     {
         th_printf("e-[Invalid payload size: expected %d, got %d]\r\n",
                   expected_bytes, bytes);
-        original_features_ptr = nullptr; // ADD THIS
+        original_features_ptr = nullptr;
         return;
     }
 
@@ -115,17 +115,18 @@ void th_load_tensor(void)
 void th_infer(void)
 {
 
-    // Your existing inference code...
+    // Windowed inference processing
     float total_mse = 0.0f;
     float predicted_features[NUM_PCA_FEATURES];
 
-    for (int t = 0; t < NUM_VALID_TIMESTEPS_FOR_PREDICTION; t++)
+    // Process only valid timesteps in current window
+    for (int t = 0; t < PREDICTIONS_PER_WINDOW; t++)
     {
         ngrc_expand_features(original_features_ptr, t, expanded_vector_buffer);
         ngrc_predict(expanded_vector_buffer, predicted_features);
 
-        int actual_timestep = t + MAX_ABS_DELAY + 1;
-        if (actual_timestep >= NUM_FRAMES)
+        int actual_timestep = t + MAX_ABS_DELAY;
+        if (actual_timestep >= WINDOW_SIZE)
         {
             break;
         }
@@ -137,7 +138,7 @@ void th_infer(void)
         total_mse += timestep_mse;
     }
 
-    current_anomaly_score = total_mse / NUM_VALID_TIMESTEPS_FOR_PREDICTION;
+    current_anomaly_score = total_mse / PREDICTIONS_PER_WINDOW;
 }
 
 void th_results(void)
