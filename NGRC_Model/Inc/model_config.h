@@ -26,13 +26,13 @@
 #define NUM_VALID_TIMESTEPS_FOR_PREDICTION 121  // 128 - 6
 
 // Windowed inference configuration
-#define WINDOW_SIZE 30                    // Timesteps per window
+#define WINDOW_SIZE 7                     // Minimum timesteps for 1 prediction
 #define WINDOW_OVERLAP 6                  // Overlap for temporal dependencies  
-#define PREDICTIONS_PER_WINDOW (WINDOW_SIZE - MAX_ABS_DELAY)  // 24 predictions per window
+#define PREDICTIONS_PER_WINDOW 1          // Single prediction per inference (mathematically equivalent)
 
 // Windowed data payload size
-#define WINDOWED_SAMPLE_FLOAT_COUNT (WINDOW_SIZE * NUM_PCA_FEATURES)  // 600 floats
-#define WINDOWED_PAYLOAD_SIZE_BYTES (WINDOWED_SAMPLE_FLOAT_COUNT * sizeof(float))  // 2,400 bytes
+#define WINDOWED_SAMPLE_FLOAT_COUNT (WINDOW_SIZE * NUM_PCA_FEATURES)  // 140 floats
+#define WINDOWED_PAYLOAD_SIZE_BYTES (WINDOWED_SAMPLE_FLOAT_COUNT * sizeof(float))  // 560 bytes
 
 // Legacy full sample configuration (kept for reference)
 #define ORIGINAL_SAMPLE_FLOAT_COUNT (NUM_FRAMES * NUM_PCA_FEATURES)  // 2,560 floats
