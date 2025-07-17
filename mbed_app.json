@@ -6,8 +6,8 @@
     },
     "target_overrides": {
         "*": {
-            "platform.stdio-baud-rate": 9600,
-            "platform.default-serial-baud-rate": 9600,
+            "platform.stdio-baud-rate": 115200,
+            "platform.default-serial-baud-rate": 115200,
             "platform.stdio-convert-newlines": false,
             "platform.minimal-printf-enable-floating-point": true,
             "target.printf_lib": "minimal-printf"

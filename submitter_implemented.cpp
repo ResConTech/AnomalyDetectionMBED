@@ -26,14 +26,14 @@ FileHandle *mbed::mbed_override_console(int fd)
     return &pc;
 }
 
-// NGRC data management
-static float data_payload_buffer[WINDOWED_SAMPLE_FLOAT_COUNT]; // Windowed features only
+// FFT-based Ridge Classifier data management
+static float data_payload_buffer[WINDOWED_SAMPLE_FLOAT_COUNT]; // Single FFT sample
 static const float *original_features_ptr = nullptr;
-static const float *expanded_vectors_ptr = nullptr; // Deprecated - expansion done on-the-fly
+static const float *expanded_vectors_ptr = nullptr; // Deprecated - not used
 static float current_anomaly_score = 0.0f;
 
-// Temporary buffer for single expanded vector
-static float expanded_vector_buffer[NGRC_EFFECTIVE_TERMS];
+// Temporary buffer for FFT features with bias term
+static float expanded_vector_buffer[RIDGE_TOTAL_PARAMS];
 
 // Energy mode configuration
 #if EE_CFG_ENERGY_MODE == 1
@@ -96,7 +96,7 @@ void th_final_initialize(void)
 
 void th_load_tensor(void)
 {
-
+    // Load single FFT sample (NUM_FFT_FEATURES floats)
     size_t expected_bytes = WINDOWED_SAMPLE_FLOAT_COUNT * sizeof(float);
     size_t bytes = ee_get_buffer(reinterpret_cast<uint8_t *>(data_payload_buffer),
                                  expected_bytes);
@@ -114,31 +114,24 @@ void th_load_tensor(void)
 
 void th_infer(void)
 {
-
-    // Windowed inference processing
-    float total_mse = 0.0f;
-    float predicted_features[NUM_PCA_FEATURES];
-
-    // Process only valid timesteps in current window
-    for (int t = 0; t < PREDICTIONS_PER_WINDOW; t++)
-    {
-        ngrc_expand_features(original_features_ptr, t, expanded_vector_buffer);
-        ngrc_predict(expanded_vector_buffer, predicted_features);
-
-        int actual_timestep = t + MAX_ABS_DELAY;
-        if (actual_timestep >= WINDOW_SIZE)
-        {
-            break;
-        }
-
-        const float *actual_features =
-            original_features_ptr + (actual_timestep * NUM_PCA_FEATURES);
-
-        float timestep_mse = calculate_mse(predicted_features, actual_features);
-        total_mse += timestep_mse;
+    // FFT-based Ridge Classifier inference
+    // Single FFT sample per window (Option A)
+    
+    if (original_features_ptr == nullptr) {
+        current_anomaly_score = 0.0f;
+        return;
     }
 
-    current_anomaly_score = total_mse / PREDICTIONS_PER_WINDOW;
+    // Prepare FFT features with bias term
+    // original_features_ptr points to a single FFT vector (NUM_FFT_FEATURES floats)
+    ngrc_expand_features(original_features_ptr, 0, expanded_vector_buffer);
+    
+    // Perform Ridge classification
+    float classification_score_buffer[1];
+    ngrc_predict(expanded_vector_buffer, classification_score_buffer);
+    
+    // Store classification score as anomaly score
+    current_anomaly_score = classification_score_buffer[0];
 }
 
 void th_results(void)

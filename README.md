@@ -125,6 +125,26 @@ Specifies bare-metal profile for minimal OS overhead and deterministic performan
 Configures platform-specific serial drivers and memory management for embedded execution.
 Essential configuration file that ensures proper hardware initialization and resource allocation for benchmark execution.
 
+## python_model_files
+Python development environment containing Ridge classifier training pipeline and data preprocessing utilities for NGRC anomaly detection.
+`NGRCAnom-FFT-32bit.py` implements FFT-based anomaly detection using Ridge classifier with frequency domain filtering (1200-7900 Hz).
+Trains on cars 1-4 (normal) vs cars 5-7 (anomaly + normal) and cars 1-4 (anomaly) using 32-bit float precision for embedded compatibility.
+`extract_timeseries_save_FFT_no_log.py` processes raw audio files into frequency domain representations with configurable bin averaging.
+Extracts FFT magnitude spectra from 16kHz audio, applies frequency averaging, and saves preprocessed data as NumPy arrays.
+`convert_weights_to_cpp.py` converts trained Ridge classifier weights and bias terms into C++ constant arrays.
+Generates `ridge_weights_generated.cpp` with properly formatted float arrays and configuration updates for embedded deployment.
+Essential development toolkit for training, validating, and deploying the anomaly detection model to embedded hardware.
+
+## binary_test_file_creation
+Binary test data generation utilities for creating MLPerf Tiny benchmark datasets with proper frequency filtering and formatting.
+`generate_binary_test_files_corrected.py` processes FFT data into individual .bin files using 300-7900 Hz frequency range (103 features).
+`generate_binary_test_files_1200hz.py` creates alternative dataset with 1200-7900 Hz range (91 features) for model comparison.
+Converts NumPy arrays to little-endian float32 binary format compatible with STM32 microcontroller memory layout.
+`create_full_dataset_csv.py` generates complete CSV manifest files for 2,459 samples with class labels and windowing parameters.
+`create_debug_dataset.py` creates reduced test sets (52 samples total) for rapid development and debugging workflows.
+Both generation scripts create structured filenames (car_XX_sample_YYY_label.bin) and comprehensive README documentation.
+Critical preprocessing pipeline that bridges Python model development with embedded C++ inference testing framework.
+
 ## Energy vs Peformance Mode 
 To switch between energy (1) and peformance mode (0) setup for the benchmark, you need to change line 44 in submitter_implemented.h, and change the baud rate in mbed_app.json to 9600 (lines 9 & 10). Changing the variable to 1 and building will enable energy mode measurements and changing to 0 will enable performance mode measurements. Every change in benchmarking mode will require you to 
 rebuild and reflash.

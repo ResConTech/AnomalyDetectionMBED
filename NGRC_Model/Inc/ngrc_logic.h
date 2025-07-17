@@ -1,30 +1,29 @@
-// NGRC_Model/Inc/ngrc_logic.h
+// ngrc_logic.h
 #ifndef NGRC_LOGIC_H
 #define NGRC_LOGIC_H
 
 #include "model_config.h"
 
 /**
- * @brief Perform NGRC prediction for a single timestep
+ * @brief Perform Ridge Classifier prediction for FFT features
  * 
- * This function computes the matrix-vector multiplication:
- * out_predicted_features = ngrc_trained_weights * current_expanded_x_vector
+ * This function computes the Ridge classification score:
+ * score = dot(ridge_weights, fft_features_with_bias)
  * 
- * @param current_expanded_x_vector Pointer to the pre-expanded NGRC input vector
- *                                  Size: NGRC_EFFECTIVE_TERMS (861) floats
- * @param out_predicted_features    Pointer to output buffer for predicted features
- *                                  Size: NUM_PCA_FEATURES (20) floats
+ * @param fft_features_with_bias Pointer to FFT features with bias term appended
+ *                               Size: RIDGE_TOTAL_PARAMS (NUM_FFT_FEATURES + 1) floats
+ * @param out_classification_score Pointer to output buffer for classification score
+ *                                 Size: 1 float
  */
-void ngrc_predict(const float* current_expanded_x_vector, 
-                  float* out_predicted_features);
+void ngrc_predict(const float* fft_features_with_bias, 
+                  float* out_classification_score);
 
 /**
- * @brief Calculate Mean Squared Error between two feature vectors
+ * @brief Direct Ridge classification function
  * 
- * @param predicted Pointer to predicted features (20 floats)
- * @param actual    Pointer to actual features (20 floats)
- * @return float    Mean squared error
+ * @param fft_features_with_bias Pointer to FFT features with bias term
+ * @return float Classification score (continuous value for AUC calculation)
  */
-float calculate_mse(const float* predicted, const float* actual);
+float ridge_classify(const float* fft_features_with_bias);
 
 #endif // NGRC_LOGIC_H
