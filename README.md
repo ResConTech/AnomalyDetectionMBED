@@ -124,6 +124,7 @@ Enables minimal floating-point printf support required for result formatting and
 Specifies bare-metal profile for minimal OS overhead and deterministic performance characteristics.
 Configures platform-specific serial drivers and memory management for embedded execution.
 Essential configuration file that ensures proper hardware initialization and resource allocation for benchmark execution.
+For H7A3ZI-Q benchmarking, remove the stack size portion of the json file. Also remember to press the reset button on the MCU before benchmarking in performance mode.
 
 ## python_model_files
 Python development environment containing Ridge classifier training pipeline and data preprocessing utilities for NGRC anomaly detection.
