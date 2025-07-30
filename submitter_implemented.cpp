@@ -14,6 +14,7 @@ static mbed::DigitalOut timestampPin(D7);
 // Conditional serial port based on energy mode
 #if EE_CFG_ENERGY_MODE == 1
 // Energy mode: Use D0/D1 for external serial connection
+// For H7A3ZI-Q MCU, use PB_6ALT1 (D1) and PB_7ALT0 (D0), standard D1 D0 pins will not work.
 static mbed::UnbufferedSerial pc(D1, D0);
 #else
 // Performance mode: Use USB serial
